@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-crema-50 text-tinta-800 antialiased;
+}
+
+.gradient-hero {
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 15%, rgba(249, 93, 20, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 90% 8%, rgba(108, 164, 39, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #fdfbf7 0%, #fbf8f2 100%);
+}
+
+/* ── Botones ─────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 font-display font-semibold tracking-tight text-white shadow-cta transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-cta-hover active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  background-image: linear-gradient(135deg, #ff7a3c 0%, #f95d14 55%, #e2440a 100%);
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 font-display font-semibold tracking-tight text-tinta-800 ring-1 ring-stone-200 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:ring-aji-300 hover:text-aji-600 hover:shadow-soft active:translate-y-0 active:scale-[0.98];
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-display font-semibold text-tinta-700 transition-colors hover:bg-crema-100 hover:text-aji-600;
+}
+
+/* ── Superficies ─────────────────────────────────────────────────────── */
+
+.card {
+  @apply rounded-3xl bg-white shadow-soft ring-1 ring-stone-100;
+}
+
+.chip {
+  @apply inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider;
+}

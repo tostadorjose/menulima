@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /panel-mnl-3x9k
+Disallow: /api/admin
