@@ -111,10 +111,16 @@ export const ALL_CARTA_ITEMS: CartaItem[] = CARTA_CATEGORIAS.flatMap((c) => c.it
  * punto de la app que calcula el precio mostrado/cobrado — nunca se
  * hardcodea en la UI.
  */
-export function computeCartaPrice(item: Pick<CartaItem, "precioBase" | "categoria">): number {
-  const recargo = CATEGORIAS_CON_RECARGO.includes(item.categoria) ? RECARGO_CARTA : 0;
+export function computeCartaPrice(item: { precioBase: number; categoria: string }): number {
+  const recargo = CATEGORIAS_CON_RECARGO.includes(item.categoria as CartaCategoriaId) ? RECARGO_CARTA : 0;
   return item.precioBase + recargo;
 }
+
+/** Etiquetas visibles de cada categoría, en el orden en que se muestran en la carta. */
+export const CATEGORIA_LABELS: { id: CartaCategoriaId; nombre: string }[] = CARTA_CATEGORIAS.map((c) => ({
+  id: c.id,
+  nombre: c.nombre,
+}));
 
 export function findCartaItemByKey(key: string): CartaItem | undefined {
   return ALL_CARTA_ITEMS.find((i) => i.key === key);

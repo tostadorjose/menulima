@@ -119,4 +119,7 @@ export interface PriceEntry {
   nombre: string;
   categoria: string;
   precioBase: number;
+  /** false = oculto de la carta pública; undefined se trata como activo. */
+  activo?: boolean;
+  imagenUrl?: string;
 }

@@ -8,6 +8,7 @@ import {
   apiSignup,
   apiUpdateUser,
   apiVerify,
+  sessionFromTokens,
   type IdentitySession,
   type IdentityUser,
 } from "@/lib/auth/netlifyIdentity";
@@ -58,12 +59,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const params = new URLSearchParams(hash.replace(/^#/, ""));
       const confirmationToken = params.get("confirmation_token");
       const recoveryToken = params.get("recovery_token");
-      if (!confirmationToken && !recoveryToken) return false;
+      // Retorno del flujo OAuth (Google): GoTrue devuelve los tokens en el hash.
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      if (!confirmationToken && !recoveryToken && !accessToken) return false;
 
       try {
-        const s = confirmationToken
-          ? await apiVerify("signup", confirmationToken)
-          : await apiVerify("recovery", recoveryToken as string);
+        let s: IdentitySession;
+        if (confirmationToken) {
+          s = await apiVerify("signup", confirmationToken);
+        } else if (recoveryToken) {
+          s = await apiVerify("recovery", recoveryToken);
+        } else {
+          s = await sessionFromTokens(
+            accessToken as string,
+            refreshToken ?? "",
+            Number(params.get("expires_in")) || 3600
+          );
+          // Sincroniza el perfil en Sheets (best-effort, no bloquea el login).
+          fetch("/api/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: s.user.email,
+              nombre: (s.user.user_metadata?.full_name as string) ?? "",
+              telefono: (s.user.user_metadata?.telefono as string) ?? "",
+            }),
+          }).catch(() => {});
+        }
         persist(s);
       } finally {
         window.history.replaceState(null, "", window.location.pathname + window.location.search);

@@ -80,6 +80,32 @@ export async function getPrices(): Promise<PriceEntry[]> {
   return json.prices;
 }
 
+export async function saveProduct(product: {
+  key?: string;
+  nombre: string;
+  categoria: string;
+  precioBase: number;
+  activo: boolean;
+  imagenUrl?: string;
+}): Promise<{ key: string }> {
+  if (!sheetsConfigured) {
+    warnDevFallback("saveProduct");
+    const key = product.key ?? `${product.categoria}__${product.nombre.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    devPrices.set(key, { key, ...product, imagenUrl: product.imagenUrl ?? "" });
+    return { key };
+  }
+  return callSheets<{ key: string }>("saveProduct", {}, { method: "POST", body: product, protegido: true });
+}
+
+export async function deleteProduct(key: string): Promise<void> {
+  if (!sheetsConfigured) {
+    warnDevFallback("deleteProduct");
+    devPrices.delete(key);
+    return;
+  }
+  await callSheets("deleteProduct", { key }, { protegido: true });
+}
+
 export async function setPrice(key: string, precioBase: number): Promise<void> {
   if (!sheetsConfigured) {
     warnDevFallback("setprice");

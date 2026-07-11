@@ -141,6 +141,32 @@ export async function apiVerify(
   return tokenRequestToSession(json);
 }
 
+/**
+ * URL de inicio del flujo OAuth con Google (implicit grant de GoTrue).
+ * Requiere habilitar Google en Netlify: Identity → External providers.
+ * Al volver, GoTrue redirige al sitio con #access_token=...&refresh_token=...
+ * que AuthContext procesa en handleAuthHash.
+ */
+export function getGoogleAuthUrl(): string {
+  assertConfigured();
+  return `${IDENTITY_URL}/authorize?provider=google`;
+}
+
+/** Construye una sesión a partir de tokens sueltos (retorno del flujo OAuth). */
+export async function sessionFromTokens(
+  accessToken: string,
+  refreshToken: string,
+  expiresIn: number
+): Promise<IdentitySession> {
+  const user = await apiGetUser(accessToken);
+  return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_at: Date.now() + expiresIn * 1000,
+    user,
+  };
+}
+
 export async function apiSetNewPassword(accessToken: string, password: string): Promise<IdentityUser> {
   assertConfigured();
   const res = await fetch(`${IDENTITY_URL}/user`, {

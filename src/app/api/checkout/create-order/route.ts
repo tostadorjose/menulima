@@ -66,6 +66,7 @@ export async function POST(req: Request) {
 
   const prices = await getPrices().catch(() => []);
   const priceMap = new Map(prices.map((p) => [p.key, p.precioBase]));
+  const productMap = new Map(prices.map((p) => [p.key, p]));
 
   const now = new Date();
   const availability = getMenuAvailability(now, priceMap.get("menu"));
@@ -106,17 +107,28 @@ export async function POST(req: Request) {
         cantidad: raw.cantidad,
       });
     } else {
-      const cartaItem = findCartaItemByKey(raw.key);
-      if (!cartaItem) {
+      // El catálogo vivo (Sheets, editable desde el backoffice) manda; el
+      // hardcodeado de cartaData es solo respaldo si Sheets no responde.
+      const producto = productMap.get(raw.key);
+      const fallback = findCartaItemByKey(raw.key);
+      if (!producto && !fallback) {
         return NextResponse.json({ error: `Plato no encontrado: ${raw.key}` }, { status: 400 });
       }
-      const precioBase = priceMap.get(cartaItem.key) ?? cartaItem.precioBase;
-      const precioUnitario = computeCartaPrice({ precioBase, categoria: cartaItem.categoria });
+      if (producto && producto.activo === false) {
+        return NextResponse.json(
+          { error: `"${producto.nombre}" ya no está disponible. Quítalo del carrito para continuar.` },
+          { status: 409 }
+        );
+      }
+      const nombre = producto?.nombre ?? fallback!.plato;
+      const categoria = producto?.categoria ?? fallback!.categoria;
+      const precioBase = producto?.precioBase ?? fallback!.precioBase;
+      const precioUnitario = computeCartaPrice({ precioBase, categoria });
       items.push({
         kind: "carta",
         id: raw.id,
-        key: cartaItem.key,
-        nombre: cartaItem.plato,
+        key: raw.key,
+        nombre,
         precioUnitario,
         cantidad: raw.cantidad,
       });

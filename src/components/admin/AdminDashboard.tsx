@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SalesReport from "./SalesReport";
-import PriceEditor from "./PriceEditor";
+import ProductManager from "./ProductManager";
 import OrdersToVerify from "./OrdersToVerify";
 
-type Tab = "ventas" | "precios" | "yape";
+type Tab = "ventas" | "productos" | "yape";
 
 export default function AdminDashboard({ adminUser }: { adminUser: string }) {
   const [tab, setTab] = useState<Tab>("ventas");
@@ -18,8 +18,8 @@ export default function AdminDashboard({ adminUser }: { adminUser: string }) {
   }
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "ventas", label: "Ventas de hoy" },
-    { id: "precios", label: "Precios" },
+    { id: "ventas", label: "Ventas" },
+    { id: "productos", label: "Productos" },
     { id: "yape", label: "Pedidos por verificar (Yape)" },
   ];
 
@@ -48,7 +48,7 @@ export default function AdminDashboard({ adminUser }: { adminUser: string }) {
 
       <div className="mt-6">
         {tab === "ventas" && <SalesReport />}
-        {tab === "precios" && <PriceEditor />}
+        {tab === "productos" && <ProductManager />}
         {tab === "yape" && <OrdersToVerify />}
       </div>
     </div>
