@@ -10,6 +10,52 @@ body {
   @apply bg-crema-50 text-tinta-800 antialiased;
 }
 
+/* ── Accesibilidad ───────────────────────────────────────────────────── */
+
+/* Foco visible consistente en todo elemento interactivo (WCAG 2.4.7). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid theme("colors.aji.500");
+  outline-offset: 2px;
+}
+
+/* Enlace "saltar al contenido": invisible hasta recibir foco con teclado. */
+.skip-link {
+  @apply sr-only;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  @apply rounded-full bg-tinta-900 px-5 py-2.5 text-sm font-semibold text-white;
+}
+
+/* Respeta la preferencia del sistema de reducir movimiento (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .gradient-hero {
   background:
     radial-gradient(ellipse 60% 50% at 12% 15%, rgba(249, 93, 20, 0.09) 0%, transparent 60%),

@@ -26,12 +26,12 @@ export default function HomePage() {
                 Explorar la carta
               </Link>
             </div>
-            <div className="mt-2 flex items-center gap-6 text-sm text-stone-400">
+            <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-stone-500">
               <span className="flex items-center gap-2">
-                <span className="text-lima-500">●</span> Lunes a viernes, 11:30 – 3:00 p.m.
+                <span className="text-lima-500" aria-hidden="true">●</span> Lunes a viernes, 11:30 – 3:00 p.m.
               </span>
               <span className="flex items-center gap-2">
-                <span className="text-lima-500">●</span> Preventa para el día siguiente
+                <span className="text-lima-500" aria-hidden="true">●</span> Preventa para el día siguiente
               </span>
             </div>
           </div>

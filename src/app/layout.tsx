@@ -21,6 +21,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AuthModal from "@/components/AuthModal";
 import CartDrawer from "@/components/CartDrawer";
+import MotionProvider from "@/components/MotionProvider";
 
 export const metadata: Metadata = {
   title: "menulima — El menú del día, listo para pedir",
@@ -33,18 +34,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${fontDisplay.variable} ${fontBody.variable}`}>
       <body className="flex min-h-screen flex-col font-body">
-        <AuthProvider>
-          <AuthModalProvider>
-            <CartProvider>
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <WhatsAppButton />
-              <AuthModal />
-              <CartDrawer />
-            </CartProvider>
-          </AuthModalProvider>
-        </AuthProvider>
+        <a href="#contenido" className="skip-link">
+          Saltar al contenido principal
+        </a>
+        <MotionProvider>
+          <AuthProvider>
+            <AuthModalProvider>
+              <CartProvider>
+                <Header />
+                <main id="contenido" className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+                <WhatsAppButton />
+                <AuthModal />
+                <CartDrawer />
+              </CartProvider>
+            </AuthModalProvider>
+          </AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );
