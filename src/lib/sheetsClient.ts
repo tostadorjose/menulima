@@ -173,25 +173,47 @@ export async function getProfile(email: string): Promise<ProfileEntry | null> {
   return json.profile;
 }
 
+// Estados que cuentan como venta confirmada (espejo de ESTADOS_VENTA en Code.gs).
+const ESTADOS_VENTA: Order["estado"][] = ["pagado", "en_preparacion", "en_camino", "entregado"];
+
 export interface SalesTodayReport {
   fecha: string;
   totalVentas: number;
   cantidadPedidos: number;
   pedidos: Order[];
+  mes: { periodo: string; totalVentas: number; cantidadPedidos: number };
+  historico: { totalVentas: number; cantidadPedidos: number };
+  ticketPromedio: number;
+  topProductos: { nombre: string; cantidad: number }[];
 }
 
 export async function getSalesToday(): Promise<SalesTodayReport> {
   if (!sheetsConfigured) {
     warnDevFallback("salesToday");
     const hoy = new Date().toISOString().slice(0, 10);
-    const pedidos = Array.from(devOrders.values()).filter(
-      (o) => o.fecha === hoy && o.estado !== "cancelado" && o.estado !== "pendiente_pago"
-    );
+    const ventas = Array.from(devOrders.values()).filter((o) => ESTADOS_VENTA.includes(o.estado));
+    const deHoy = ventas.filter((o) => o.fecha === hoy);
+    const delMes = ventas.filter((o) => o.fecha.slice(0, 7) === hoy.slice(0, 7));
+    const suma = (arr: Order[]) => arr.reduce((s, o) => s + o.total, 0);
+    const conteo = new Map<string, number>();
+    for (const v of ventas) {
+      for (const it of v.items) {
+        const nombre = it.kind === "menu" ? "Menú del día" : it.nombre;
+        conteo.set(nombre, (conteo.get(nombre) ?? 0) + it.cantidad);
+      }
+    }
     return {
       fecha: hoy,
-      totalVentas: pedidos.reduce((sum, o) => sum + o.total, 0),
-      cantidadPedidos: pedidos.length,
-      pedidos,
+      totalVentas: suma(deHoy),
+      cantidadPedidos: deHoy.length,
+      pedidos: deHoy,
+      mes: { periodo: hoy.slice(0, 7), totalVentas: suma(delMes), cantidadPedidos: delMes.length },
+      historico: { totalVentas: suma(ventas), cantidadPedidos: ventas.length },
+      ticketPromedio: ventas.length ? suma(ventas) / ventas.length : 0,
+      topProductos: [...conteo.entries()]
+        .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .slice(0, 5),
     };
   }
   return callSheets<SalesTodayReport>("salesToday", {}, { protegido: true });
