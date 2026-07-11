@@ -13,11 +13,23 @@ const DIA_LABEL: Record<string, string> = {
   Viernes: "viernes",
 };
 
+/** Chip de una opción del menú (entrada o segundo). */
+function Opcion({ children }: { children: string }) {
+  return (
+    <span className="rounded-full bg-crema-100 px-4 py-2 font-display text-sm font-semibold text-tinta-900 ring-1 ring-crema-200">
+      {children}
+    </span>
+  );
+}
+
 /**
  * Tarjeta protagonista del hero: el menú del día real, calculado en vivo.
  * Se renderiza recién tras montar en el navegador: la home se pre-renderiza
  * estática y este contenido depende de la hora, así que renderizarlo en el
  * servidor causaría un mismatch de hidratación.
+ *
+ * Nota de negocio: la semana del ciclo (1-4) es control interno y NO se
+ * muestra al cliente; el sabor del refresco tampoco (solo "refresco del día").
  */
 export default function HeroMenuCard() {
   const [mounted, setMounted] = useState(false);
@@ -49,26 +61,33 @@ export default function HeroMenuCard() {
         </span>
       </div>
 
-      <p className="text-sm font-semibold uppercase tracking-widest text-aji-500">
-        Menú del {DIA_LABEL[a.dia]}
+      <p className="font-display text-xl font-extrabold tracking-tight text-tinta-900">
+        Menú del <span className="text-aji-500">{DIA_LABEL[a.dia]}</span>
       </p>
-      <p className="mt-0.5 text-xs text-stone-400">Semana {a.semana} del ciclo</p>
 
-      <div className="mt-5 space-y-4">
+      <div className="mt-6 space-y-5">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Entrada a elección</p>
-          <p className="mt-1 font-display text-lg font-semibold text-tinta-900">
-            {a.menu.entrada[0]} <span className="font-normal text-stone-300">·</span> {a.menu.entrada[1]}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Entrada — elige una</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Opcion>{a.menu.entrada[0]}</Opcion>
+            <span className="text-xs font-bold uppercase text-stone-400" aria-hidden="true">
+              o
+            </span>
+            <Opcion>{a.menu.entrada[1]}</Opcion>
+          </div>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Segundo a elección</p>
-          <p className="mt-1 font-display text-lg font-semibold text-tinta-900">
-            {a.menu.segundo[0]} <span className="font-normal text-stone-300">·</span> {a.menu.segundo[1]}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Segundo — elige uno</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Opcion>{a.menu.segundo[0]}</Opcion>
+            <span className="text-xs font-bold uppercase text-stone-400" aria-hidden="true">
+              o
+            </span>
+            <Opcion>{a.menu.segundo[1]}</Opcion>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-stone-500">
-          <span className="text-base">🥤</span> Incluye {a.bebida.toLowerCase()}
+        <div className="flex items-center gap-2 text-sm font-medium text-stone-600">
+          <span className="text-base" aria-hidden="true">🥤</span> Incluye refresco del día
         </div>
       </div>
 
@@ -77,12 +96,17 @@ export default function HeroMenuCard() {
           <p className="font-display text-3xl font-extrabold tracking-tight text-tinta-900">
             S/ {a.precioMenu.toFixed(0)}
           </p>
-          <p className="text-xs text-stone-400">entrada + segundo + refresco</p>
+          <p className="text-xs text-stone-500">todo incluido</p>
         </div>
         <Link href="/menu" className="btn-primary !px-6 !py-3">
           Pedir ahora
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
+
+      <p className="mt-4 text-center text-xs text-stone-500">
+        🍳 Preparado el mismo día, en cocina propia
+      </p>
     </motion.div>
   );
 }

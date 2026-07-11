@@ -59,9 +59,7 @@ export default function MenuPage() {
         <div className="card mt-6 h-96 animate-pulse bg-white/60" />
       ) : (
         <>
-      <p className="mt-1 text-stone-500">
-        Semana {availability.semana} del ciclo · {availability.dia}
-      </p>
+      <p className="mt-1 text-stone-500">{availability.dia}</p>
 
       {!availability.disponibleHoy && (
         <motion.div
@@ -133,8 +131,8 @@ export default function MenuPage() {
           </div>
         </fieldset>
 
-        <p className="text-sm text-stone-500">
-          Incluye <span className="font-semibold">{availability.bebida}</span> como refresco del día.
+        <p className="text-sm font-medium text-stone-600">
+          <span aria-hidden="true">🥤</span> Incluye el refresco del día.
         </p>
 
         <div className="mt-6 flex items-center justify-between">
