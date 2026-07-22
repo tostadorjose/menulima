@@ -12,15 +12,18 @@ export async function POST(req: Request) {
   const contentType = req.headers.get("content-type") ?? "";
   let krAnswer: string | null = null;
   let krHash: string | null = null;
+  let krHashKey: string | undefined;
 
   if (contentType.includes("application/json")) {
     const json = await req.json().catch(() => ({}));
     krAnswer = json["kr-answer"] ?? null;
     krHash = json["kr-hash"] ?? null;
+    krHashKey = json["kr-hash-key"] ?? undefined;
   } else {
     const form = await req.formData().catch(() => null);
     krAnswer = (form?.get("kr-answer") as string) ?? null;
     krHash = (form?.get("kr-hash") as string) ?? null;
+    krHashKey = (form?.get("kr-hash-key") as string) ?? undefined;
   }
 
   if (!krAnswer || !krHash) {
@@ -29,7 +32,7 @@ export async function POST(req: Request) {
 
   let valid: boolean;
   try {
-    valid = verifyIzipayIpnSignature(krAnswer, krHash);
+    valid = verifyIzipayIpnSignature(krAnswer, krHash, krHashKey);
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Error" }, { status: 500 });
   }
