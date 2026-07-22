@@ -2,9 +2,7 @@ import crypto from "node:crypto";
 
 /**
  * Cliente Izipay (Lyra / MiCuentaWeb V4). Mismo formato de API que se usa en
- * producción en mercadodecafe.com (funcional, verificado). Aquí no hay
- * credenciales de menulima.pe todavía -- solo falta definir
- * IZIPAY_SHOP_ID/USERNAME/PASSWORD/PUBLIC_KEY/HMAC_SHA256_KEY en Netlify.
+ * producción en mercadodecafe.com (funcional, verificado).
  */
 
 export const izipayConfigured = Boolean(
@@ -73,23 +71,43 @@ export function getIzipayClientConfig() {
   };
 }
 
-/**
- * Verifica la firma HMAC-SHA256 del IPN de Izipay: el payload trae
- * `kr-answer` (JSON string) y `kr-hash` (hex). NOTA: verifica el nombre
- * exacto de estos campos contra la documentación V4 vigente cuando la
- * cuenta esté activa -- Lyra ha usado variantes de este esquema entre
- * versiones de su API.
- */
-export function verifyIzipayIpnSignature(krAnswer: string, krHash: string): boolean {
-  const key = process.env.IZIPAY_HMAC_SHA256_KEY;
-  if (!key) {
-    throw new Error("IZIPAY_HMAC_SHA256_KEY no configurado");
-  }
+function hmacMatches_(krAnswer: string, krHash: string, key: string): boolean {
   const computed = crypto.createHmac("sha256", key).update(krAnswer).digest("hex");
   const a = Buffer.from(computed);
   const b = Buffer.from(krHash);
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
+}
+
+/**
+ * Verifica la firma del IPN de Izipay (Lyra V4). Detalle CLAVE de Lyra: según
+ * el campo `kr-hash-key` del payload, el `kr-hash` se calcula con distinta llave:
+ *   - "password"     → la CONTRASEÑA de la API REST (así firma Lyra el IPN
+ *                      server-to-server). Es el caso que daba FAILED_SERVER_403.
+ *   - "sha256_hmac"  → la clave HMAC-SHA256 (así firma la respuesta al navegador).
+ * Verificamos con la llave indicada y, por robustez ante variantes del panel,
+ * aceptamos también la otra (ambas son secretos solo conocidos por comercio+Lyra).
+ */
+export function verifyIzipayIpnSignature(
+  krAnswer: string,
+  krHash: string,
+  krHashKey?: string
+): boolean {
+  const password = process.env.IZIPAY_PASSWORD;
+  const hmacKey = process.env.IZIPAY_HMAC_SHA256_KEY;
+  if (!password && !hmacKey) {
+    throw new Error("Falta IZIPAY_PASSWORD y/o IZIPAY_HMAC_SHA256_KEY para verificar el IPN");
+  }
+
+  // Orden de preferencia según kr-hash-key; si no viene, probamos ambas.
+  const candidatas =
+    krHashKey === "password"
+      ? [password, hmacKey]
+      : krHashKey === "sha256_hmac"
+        ? [hmacKey, password]
+        : [password, hmacKey];
+
+  return candidatas.some((k) => k && hmacMatches_(krAnswer, krHash, k));
 }
 
 export interface IzipayIpnAnswer {
